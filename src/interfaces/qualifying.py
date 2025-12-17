@@ -2,7 +2,7 @@ import arcade
 import threading
 import time
 import numpy as np
-from src.ui_components import build_track_from_example_lap, LapTimeLeaderboardComponent, QualifyingSegmentSelectorComponent
+from src.ui_components import build_track_from_example_lap, LapTimeLeaderboardComponent, QualifyingSegmentSelectorComponent, LegendComponent
 from src.f1_data import get_driver_quali_telemetry
 from src.f1_data import FPS
 from src.lib.time import format_time
@@ -65,6 +65,9 @@ class QualifyingReplay(arcade.Window):
         self.right_ui_margin = right_ui_margin
 
         self.chart_active = False
+
+        # Legend component for control icons
+        self.legend_comp = LegendComponent()
 
         # Build the track layout from an example lap
 
@@ -522,18 +525,51 @@ class QualifyingReplay(arcade.Window):
             # Controls Legend - Bottom Left (keeps small offset from left UI edge)
             legend_x = max(12, self.left_ui_margin - 320) if hasattr(self, "left_ui_margin") else 20
             legend_y = 150 # Height of legend block
+            legend_icons = self.legend_comp._control_icons_textures # icons
             legend_lines = [
-                "Controls:",
-                "[SPACE]  Pause/Resume",
-                "[←/→]    Rewind / FastForward",
-                "[↑/↓]    Speed +/- (0.5x, 1x, 2x, 4x)",
-                "[R]       Restart",
+                ("Controls:"),
+                ("[SPACE]  Pause/Resume"),
+                ("Rewind / FastForward", ("[", "/", "]"),("arrow-left", "arrow-right")), # text, brackets, icons
+                ("Speed +/- (0.5x, 1x, 2x, 4x)", ("[", "/", "]"), ("arrow-up", "arrow-down")), # text, brackets, icons
+                ("[R]       Restart"),
+                # ("[B]       Toggle Progress Bar"),
             ]
-
-            for i, line in enumerate(legend_lines):
+            
+            for i, lines in enumerate(legend_lines):
+                line = lines[0] if isinstance(lines, tuple) else lines
+                brackets = lines[1] if isinstance(lines, tuple) and len(lines) > 2 else None # brackets only if icons exist
+                icon_keys = lines[2] if isinstance(lines, tuple) and len(lines) > 2 else None
+            
+                icon_size = 14
+                # Draw icons if any
+                if icon_keys:
+                    control_icon_x = legend_x + 12
+                    for key in icon_keys:
+                        icon_texture = legend_icons.get(key)
+                        if icon_texture:
+                            control_icon_y = legend_y - (i * 25) + 5
+                            rect = arcade.XYWH(control_icon_x, control_icon_y, icon_size, icon_size)
+                            arcade.draw_texture_rect(
+                                rect = rect,
+                                texture = icon_texture,
+                                angle = 0,
+                                alpha = 255
+                            )
+                            control_icon_x += icon_size + 6  # spacing between icons                
+                # Draw brackets if any
+                if brackets:
+                    for j in range(len(brackets)):
+                        arcade.Text(
+                            brackets[j],
+                            legend_x + (j * (icon_size + 5)),
+                            legend_y - (i * 25),
+                            arcade.color.LIGHT_GRAY if i > 0 else arcade.color.WHITE,
+                            14,
+                        ).draw()
+                # Draw the text line
                 arcade.Text(
                     line,
-                    legend_x,
+                    legend_x + (60 if icon_keys else 0),
                     legend_y - (i * 25),
                     arcade.color.LIGHT_GRAY if i > 0 else arcade.color.WHITE,
                     14,
