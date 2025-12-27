@@ -1318,8 +1318,8 @@ class RaceControlsComponent(BaseComponent):
             
             # Draw speed text in center
             if not self._hide_speed_text:
-                arcade.Text(f"{speed:.1f}x", x, y - 5,
-                            arcade.color.WHITE, 14,
+                arcade.Text(f"{speed}x", x, y - 5,
+                            arcade.color.WHITE, 11,
                             anchor_x="center",
                             bold=True).draw()
             
