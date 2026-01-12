@@ -50,6 +50,7 @@ class F1RaceReplayWindow(arcade.Window):
         self.left_ui_margin = left_ui_margin
         self.right_ui_margin = right_ui_margin
         self.toggle_drs_zones = True 
+        self.show_driver_labels = False
         # UI components
         leaderboard_x = max(20, self.width - self.right_ui_margin + 12)
         self.leaderboard_comp = LeaderboardComponent(x=leaderboard_x, width=240, visible=visible_hud)
@@ -349,6 +350,12 @@ class F1RaceReplayWindow(arcade.Window):
         for code, pos in frame["drivers"].items():
             sx, sy = self.world_to_screen(pos["x"], pos["y"])
             color = self.driver_colors.get(code, arcade.color.WHITE)
+            
+            if self.show_driver_labels:
+                lx, ly = sx + 15, sy + 15
+                arcade.draw_line(sx, sy, lx, ly, color, 1)
+                arcade.draw_text(code, lx + 3, ly, color, 10, anchor_x="left", anchor_y="center", bold=True)
+
             arcade.draw_circle_filled(sx, sy, 6, color)
         
         # --- UI ELEMENTS (Dynamic Positioning) ---
@@ -523,6 +530,8 @@ class F1RaceReplayWindow(arcade.Window):
             self.race_controls_comp.flash_button('rewind')
         elif symbol == arcade.key.D:
             self.toggle_drs_zones = not self.toggle_drs_zones
+        elif symbol == arcade.key.L:
+            self.show_driver_labels = not self.show_driver_labels
         elif symbol == arcade.key.H:
             # Toggle Controls popup with 'H' key — show anchored to bottom-left with 20px margin
             margin_x = 20
